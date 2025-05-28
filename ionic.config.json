@@ -1,0 +1,7 @@
+{
+  "name": "kaffecito",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
