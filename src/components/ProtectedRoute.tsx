@@ -5,7 +5,7 @@ interface ProtectedRouteProps extends RouteProps {
   isAuthenticated: boolean;
   redirectPath?: string;
 }
-
+//login
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   isAuthenticated,
   redirectPath = '/login',
