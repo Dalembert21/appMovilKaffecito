@@ -177,12 +177,7 @@ const Products: React.FC = () => {
           <IonTitle className="text-white text-2xl">{nombreCategoria || 'Cargando...'}</IonTitle>
           {orderItems.length > 0 && (
             <IonButtons slot="end">
-              <IonButton className="relative">
-                <IonIcon icon={cart} />
-                <IonBadge color="danger" className="absolute -top-1 -right-1">
-                  {orderItems.length}
-                </IonBadge>
-              </IonButton>
+              
             </IonButtons>
           )}
         </IonToolbar>

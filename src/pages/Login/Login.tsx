@@ -8,7 +8,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-    const [cedula_usuario, setCedula] = useState('');
+  const [cedula_usuario, setCedula] = useState('');
   const [password_usuario, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,20 +18,20 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
     try {
       // Limpiar espacios en blanco
       const cedula = cedula_usuario.trim();
       const password = password_usuario.trim();
-      
+
       if (!cedula || !password) {
         throw new Error('Por favor ingrese su cédula y contraseña');
       }
-      
+
       console.log('Intentando login con:', { cedula, password });
       const response = await login(cedula, password);
       console.log('Respuesta del login:', response);
-      
+
       if (response?.access_token) {
         // Guardar el token y notificar el inicio de sesión exitoso
         localStorage.setItem('access_token', response.access_token);
@@ -44,9 +44,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       }
     } catch (error: any) {
       console.error('Error de autenticación:', error);
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          'Error al iniciar sesión. Por favor, intente nuevamente.';
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        'Error al iniciar sesión. Por favor, intente nuevamente.';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -127,14 +127,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </div>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm font-bold text-white/80">
-              ¿No tienes cuenta?{' '}
-              <a href="#" className="font-bold text-white transition">
-                Regístrate
-              </a>
-            </p>
-          </div>
+
         </div>
       </div>
     </IonContent>

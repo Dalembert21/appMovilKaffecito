@@ -88,7 +88,7 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <IonMenu contentId="main-content" type="overlay" className="bg-primary-900">
+      <IonMenu contentId="main-content" type="overlay" className="bg-primary-800">
         <IonContent className="ion-padding bg-primary-900 h-full">
           <div className="h-full flex flex-col">
             <div className="p-6 border-b border-gray-700">
