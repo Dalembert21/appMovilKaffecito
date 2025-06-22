@@ -16,21 +16,41 @@ import {
   IonLabel,
   IonList,
   IonItem,
-  useIonRouter
+  IonLoading,
+  IonAlert,
+  IonButton
 } from '@ionic/react';
 import { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { menu, home, cart, logOut } from 'ionicons/icons';
-import { getCategorias, Categoria } from '../../services/categoria.service';
+import { menu, home, cart, logOut, restaurantOutline } from 'ionicons/icons';
+import { categoryService } from '../../services/api.service';
 import { menuController } from '@ionic/core';
-import { logout } from '../../services/auth.service';
+import { getCategoryImageUrl } from '../../config';
+
+interface Category {
+  id_categoria: number;
+  nombre_categoria: string;
+  descripcion_categoria: string;
+  imagen_categoria?: string;
+}
+
+interface Product {
+  id_producto: number;
+  nombre_producto: string;
+  descripcion_producto: string;
+  precio_producto: number;
+  stock_producto: number;
+  estado_producto: boolean;
+  imagen_url: string;
+  id_categoria: number;
+}
 
 const Home: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const history = useHistory();
-  const [categories, setCategories] = useState<Categoria[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
   const [activePath, setActivePath] = useState(window.location.pathname);
 
   // Actualizar la ruta activa cuando cambie la ubicación
@@ -53,8 +73,7 @@ const Home: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      logout();
-      // Forzar recarga completa para limpiar el estado
+      localStorage.removeItem('token');
       window.location.href = '/login';
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -64,11 +83,13 @@ const Home: React.FC = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const categoriasData = await getCategorias();
+        setLoading(true);
+        const categoriasData = await categoryService.getCategories();
+        console.log('Categorías recibidas:', categoriasData);
         setCategories(categoriasData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido al cargar las categorías');
         console.error('Error cargando categorías:', err);
+        setError('Error al cargar las categorías. Por favor, intente nuevamente.');
       } finally {
         setLoading(false);
       }
@@ -109,8 +130,16 @@ const Home: React.FC = () => {
                 className={`${activePath.startsWith('/pedidos') ? 'bg-gray-800' : ''} --background:transparent hover:bg-gray-800 rounded-lg m-2`}
                 onClick={() => navigateTo('/pedidos')}
               >
-                <IonIcon slot="start" icon={cart} className="text-white text-xl mr-4" />
+                <IonIcon slot="start" icon={restaurantOutline} className="text-white text-xl mr-4" />
                 <IonLabel className="text-white">Pedidos</IonLabel>
+              </IonItem>
+              <IonItem
+                button
+                className={`${activePath === '/carrito' ? 'bg-gray-800' : ''} --background:transparent hover:bg-gray-800 rounded-lg m-2`}
+                onClick={() => navigateTo('/carrito')}
+              >
+                <IonIcon slot="start" icon={cart} className="text-white text-xl mr-4" />
+                <IonLabel className="text-white">Carrito</IonLabel>
               </IonItem>
             </IonList>
             <div className="p-4 border-t border-gray-700">
@@ -140,6 +169,11 @@ const Home: React.FC = () => {
               </IonMenuButton>
             </IonButtons>
             <IonTitle className="text-left font-bold text-white">Kaffecito</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={() => history.push('/carrito')}>
+                <IonIcon icon={cart} />
+              </IonButton>
+            </IonButtons>
           </IonToolbar>
         </IonHeader>
 
@@ -152,6 +186,15 @@ const Home: React.FC = () => {
             '--padding-end': '2rem',
           } as React.CSSProperties}
         >
+          <IonLoading isOpen={loading} message="Cargando categorías..." />
+          <IonAlert
+            isOpen={!!error}
+            onDidDismiss={() => setError('')}
+            header="Error"
+            message={error}
+            buttons={['OK']}
+          />
+
           <div className="max-w-4xl mx-auto">
             <div className="mb-8 text-center">
               <h1 className="text-3xl font-bold text-white mb-2">Categorías del Menú</h1>
@@ -185,41 +228,50 @@ const Home: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredCategories.map(category => (
-                  <IonCard
-                    key={category.id_categoria}
-                    className={`m-0 h-full rounded-3xl relative overflow-hidden transform transition-all duration-300 hover:-translate-y-1 cursor-pointer`}
-                    style={{
-                      '--background': 'transparent',
-                      '--ion-card-background': 'transparent',
-                      'background': 'radial-gradient(ellipse at top left, rgba(38, 43, 51, 0.95) 0%, rgba(38, 43, 51, 0.8) 40%, rgba(38, 43, 51, 0.4) 70%, rgba(12, 15, 20, 0) 100%)',
-                      'boxShadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    } as React.CSSProperties}
-                    onClick={() => history.push(`/productos/categoria/${category.id_categoria}`)}
-                  >
-                    <img
-                      alt={category.nombre_categoria}
-                      src={category.img || 'https://ionicframework.com/docs/img/demos/card-media.png'}
-                      className="w-full h-52 object-cover "
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = 'https://ionicframework.com/docs/img/demos/card-media.png';
-                      }}
-                    />
-                    <IonCardHeader className="p-4">
-                      <IonCardTitle className="text-3xl font-bold text-primary-50">
-                        {category.nombre_categoria}
-                      </IonCardTitle>
-                    </IonCardHeader>
-                    <IonCardContent className="ion-padding">
-                      {category.descripcion_categoria && (
-                        <p className="text-2xl text-white leading-tight" style={{ fontSize: '1.2rem' }}>
-                          {category.descripcion_categoria}
-                        </p>
-                      )}
-                    </IonCardContent>
-                  </IonCard>
-                ))}
+                {filteredCategories.map(category => {
+                  const imageUrl = getCategoryImageUrl(category.imagen_categoria);
+                  
+                  console.log(`Categoría ${category.nombre_categoria}:`, {
+                    imagen_categoria: category.imagen_categoria,
+                    imageUrl: imageUrl
+                  });
+
+                  return (
+                    <IonCard
+                      key={category.id_categoria}
+                      className={`m-0 h-full rounded-3xl relative overflow-hidden transform transition-all duration-300 hover:-translate-y-1 cursor-pointer`}
+                      style={{
+                        '--background': 'transparent',
+                        '--ion-card-background': 'transparent',
+                        'background': 'radial-gradient(ellipse at top left, rgba(38, 43, 51, 0.95) 0%, rgba(38, 43, 51, 0.8) 40%, rgba(38, 43, 51, 0.4) 70%, rgba(12, 15, 20, 0) 100%)',
+                        'boxShadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      } as React.CSSProperties}
+                      onClick={() => history.push(`/productos/categoria/${category.id_categoria}`)}
+                    >
+                      <img
+                        alt={category.nombre_categoria}
+                        src={imageUrl}
+                        className="w-full h-52 object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://ionicframework.com/docs/img/demos/card-media.png';
+                        }}
+                      />
+                      <IonCardHeader className="p-4">
+                        <IonCardTitle className="text-3xl font-bold text-primary-50">
+                          {category.nombre_categoria}
+                        </IonCardTitle>
+                      </IonCardHeader>
+                      <IonCardContent className="ion-padding">
+                        {category.descripcion_categoria && (
+                          <p className="text-2xl text-white leading-tight" style={{ fontSize: '1.2rem' }}>
+                            {category.descripcion_categoria}
+                          </p>
+                        )}
+                      </IonCardContent>
+                    </IonCard>
+                  );
+                })}
               </div>
             )}
           </div>

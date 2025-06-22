@@ -5,6 +5,7 @@ import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
 import Productos from './pages/Productos/productos';
 import Pedidos from './pages/Pedidos/Pedidos';
+import Carrito from './pages/Carrito/Carrito';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -53,6 +54,9 @@ const App: React.FC = () => (
         </Route>
         <Route exact path="/pedidos">
           <Pedidos />
+        </Route>
+        <Route exact path="/carrito">
+          <Carrito />
         </Route>
         <Route exact path="/">
           <Redirect to="/login" />

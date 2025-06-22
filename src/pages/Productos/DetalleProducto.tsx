@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   IonContent,
   IonPage,
@@ -8,27 +8,23 @@ import {
   useIonLoading,
   useIonToast
 } from '@ionic/react';
-import axios from 'axios';
 import { arrowBack, add, remove } from 'ionicons/icons';
 import { Producto } from '../../services/producto.service';
-import { createPedido, CreatePedidoDto } from '../../services/pedido.service';
-import { createDetallePedido } from '../../services/detalle-pedido.service';
+import { CarritoContext } from '../../context/CarritoContext';
 import { useHistory } from 'react-router-dom';
-
+import { API_URL, getProductImageUrl } from '../../config';
 
 interface DetalleProductoProps {
   producto: Producto | null;
   onClose: () => void;
-  onAddToCart: (producto: Producto, cantidad: number, notas: string) => void;
-  numeroMesa?: number | null;
 }
 
-const DetalleProducto: React.FC<DetalleProductoProps> = ({ producto, onClose, onAddToCart }) => {
+const DetalleProducto: React.FC<DetalleProductoProps> = ({ producto, onClose }) => {
   const [cantidad, setCantidad] = useState(1);
   const [notas, setNotas] = useState('');
-  const [numeroMesa, setNumeroMesa] = useState<number | null>(null);
   const [present] = useIonToast();
   const [presentLoading, dismissLoading] = useIonLoading();
+  const { carrito, setCarrito } = useContext(CarritoContext);
   const history = useHistory();
 
   if (!producto) return null;
@@ -43,256 +39,48 @@ const DetalleProducto: React.FC<DetalleProductoProps> = ({ producto, onClose, on
     }
   };
 
-  const buscarPedidoPendiente = async (mesa: number) => {
-    try {
-      console.log(`Buscando pedido pendiente para mesa: ${mesa}`);
-      const token = localStorage.getItem('access_token');
-      
-      if (!token) {
-        console.error('No se encontró el token de autenticación');
-        return null;
-      }
-      
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/pedidos`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        params: {
-          estado: 'pendiente',
-          mesa: mesa
-        }
-      });
-      
-      console.log('Respuesta de la API:', response.data);
-      
-      // Verificar si la respuesta tiene la estructura esperada
-      if (response.data && response.data.success && response.data.data) {
-        // Tomar el primer pedido de la lista (el más reciente)
-        let pedido = Array.isArray(response.data.data) ? response.data.data[0] : response.data.data;
-        
-        // Si no hay pedidos para esta mesa, devolver null
-        if (!pedido) return null;
-        
-        console.log('Pedido encontrado:', pedido);
-        
-        // Asegurarse de que el pedido tenga un ID de grupo
-        if (!pedido.id_grupo_pedido) {
-          console.log('El pedido no tiene ID de grupo, asignando uno...');
-          // Si el pedido no tiene grupo, usar su ID como grupo
-          pedido.id_grupo_pedido = `GRP_${pedido.id_pedido}`;
-        }
-        
-        return pedido;
-      }
-      
-      console.log('No se encontraron pedidos pendientes para esta mesa');
-      return null;
-    } catch (error) {
-      console.error('Error buscando pedidos pendientes:', error);
-      return null;
-    }
-  };
-
-  const agregarProductoAPedidoExistente = async (pedidoId: number) => {
-    try {
-      console.log(`Agregando producto al pedido existente: ${pedidoId}`);
-      const token = localStorage.getItem('access_token');
-      
-      if (!token) {
-        console.error('No se encontró el token de autenticación');
-        throw new Error('No se encontró el token de autenticación');
-      }
-      
-      // Verificar si el producto ya está en el pedido
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/pedidos/${pedidoId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      const pedido = response.data;
-      console.log('Detalles del pedido actual:', pedido);
-      
-      // Buscar si el producto ya está en el pedido
-      const detalleExistente = pedido.detalles?.find(
-        (d: any) => d.producto?.id_producto === producto.id_producto
-      );
-      
-      if (detalleExistente) {
-        // Si el producto ya está en el pedido, actualizar la cantidad
-        console.log('Producto ya existe en el pedido, actualizando cantidad');
-        const nuevaCantidad = detalleExistente.cantidad + cantidad;
-        await axios.patch(
-          `${import.meta.env.VITE_API_URL}/detalle-pedido/${detalleExistente.id_detalle}`,
-          {
-            cantidad: nuevaCantidad,
-            subtotal: detalleExistente.precio_unitario * nuevaCantidad,
-            notas: notas || detalleExistente.notas
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-      } else {
-        // Si el producto no está en el pedido, agregarlo
-        console.log('Agregando nuevo producto al pedido');
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/detalle-pedido`,
-          {
-            id_pedido: pedidoId,
-            id_producto: producto.id_producto,
-            cantidad: cantidad,
-            precio_unitario: producto.precio_producto,
-            subtotal: producto.precio_producto * cantidad,
-            notas: notas
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-      }
-      
-      // Actualizar el total del pedido
-      console.log('Actualizando total del pedido');
-      await axios.patch(
-        `${import.meta.env.VITE_API_URL}/pedidos/${pedidoId}/actualizar-total`,
-        {},
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      console.log('Producto agregado al pedido exitosamente');
-      return true;
-    } catch (error) {
-      console.error('Error agregando producto a pedido existente:', error);
-      throw error;
-    }
-  };
-
   const handleAddToCart = async () => {
-    if (numeroMesa === null) {
-      present({
-        message: 'Por favor ingrese el número de mesa',
-        duration: 2000,
-        position: 'top',
-        color: 'warning'
-      });
-      return;
-    }
-
     try {
-      await presentLoading('Procesando pedido...');
-
-      // Obtener el token del localStorage
-      const token = localStorage.getItem('access_token');
-
-      if (!token) {
-        present({
-          message: 'Debes iniciar sesión para realizar pedidos',
-          duration: 2000,
-          position: 'bottom',
-          color: 'warning'
-        });
-        return;
-      }
-
-      // Verificar si hay un pedido pendiente para esta mesa
-      const pedidoExistente = await buscarPedidoPendiente(numeroMesa);
+      await presentLoading('Agregando al carrito...');
       
-      if (pedidoExistente) {
-        // Agregar producto al pedido existente usando el ID del grupo
-        await agregarProductoAPedidoExistente(pedidoExistente.id_pedido);
-        present({
-          message: 'Producto agregado al pedido existente',
-          duration: 2000,
-          position: 'bottom',
-          color: 'success'
-        });
+      // Verificar si el producto ya está en el carrito
+      const existingItemIndex = carrito.findIndex(item => item.producto.id_producto === producto.id_producto);
+      
+      let nuevoCarrito;
+      if (existingItemIndex >= 0) {
+        // Si ya existe, actualizar cantidad
+        nuevoCarrito = [...carrito];
+        nuevoCarrito[existingItemIndex].cantidad += cantidad;
+        if (notas) {
+          nuevoCarrito[existingItemIndex].notas = notas;
+        }
       } else {
-        // Buscar si hay algún pedido con el mismo grupo (por si acaso)
-        let idGrupoPedido = null;
-        
-        // Si hay un pedido existente para esta mesa, usar su grupo
-        if (pedidoExistente) {
-          idGrupoPedido = pedidoExistente.id_grupo_pedido;
-        }
-        
-        // Crear un nuevo pedido
-        const totalPedido = producto.precio_producto * cantidad;
-        const nuevoPedido = {
-          usuario_id: parseInt(localStorage.getItem('userId') || '0'),
-          total_pedido: totalPedido,
-          estado_pedido: 'pendiente',
-          numero_mesa: numeroMesa,
-          id_grupo_pedido: idGrupoPedido, // Incluir el ID de grupo si existe
-          productos: [{
-            id_producto: producto.id_producto,
-            cantidad: cantidad,
-            notas: notas
-          }]
-        };
-
-        const pedidoCreado = await createPedido(nuevoPedido);
-        
-        // Si no teníamos un grupo, actualizar el pedido con su propio ID de grupo
-        if (!idGrupoPedido && pedidoCreado?.id_grupo_pedido) {
-          idGrupoPedido = pedidoCreado.id_grupo_pedido;
-        }
-        
-        present({
-          message: idGrupoPedido ? 'Producto agregado al pedido' : 'Nuevo pedido creado',
-          duration: 2000,
-          position: 'bottom',
-          color: 'success'
-        });
+        // Si no existe, agregar nuevo item
+        nuevoCarrito = [...carrito, {
+          producto,
+          cantidad,
+          notas
+        }];
       }
-
-      // Llamar a la función del carrito
-      onAddToCart(producto, cantidad, notas);
       
-      // Mostrar mensaje de éxito
+      setCarrito(nuevoCarrito);
+      
       present({
-        message: 'Producto agregado correctamente',
+        message: 'Producto agregado al carrito correctamente',
         duration: 2000,
         position: 'bottom',
         color: 'success',
         cssClass: 'custom-toast',
-        buttons: [{
-          icon: 'close',
-          role: 'cancel'
-        }]
+        buttons: [{ icon: 'close', role: 'cancel' }]
       });
-
-      // Cerrar el modal después de 1 segundo
+      
       setTimeout(() => {
         onClose();
       }, 1000);
-
     } catch (error: unknown) {
-      console.error('Error al agregar el pedido:', error);
-
-      // Manejar redirección a login si no hay token
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-
-      if (errorMessage.includes('No se encontró el token')) {
-        history.push('/login');
-        return;
-      }
-
       present({
-        message: errorMessage || 'Error al procesar el pedido. Por favor, intente nuevamente.',
+        message: errorMessage || 'Error al agregar al carrito. Por favor, intente nuevamente.',
         duration: 3000,
         position: 'top',
         color: 'danger'
@@ -324,7 +112,7 @@ const DetalleProducto: React.FC<DetalleProductoProps> = ({ producto, onClose, on
           <div className="relative w-full h-[38vh] overflow-hidden">
             <div className="absolute inset-0">
               <img
-                src={producto.imagen_url || 'https://ionicframework.com/docs/img/demos/card-media.png'}
+                src={getProductImageUrl(producto.imagen_url)}
                 alt={producto.nombre_producto}
                 className="w-full h-full object-cover object-center"
                 onError={(e) => {
@@ -334,7 +122,6 @@ const DetalleProducto: React.FC<DetalleProductoProps> = ({ producto, onClose, on
               />
             </div>
           </div>
-
 
           {/* Sección fija inferior */}
           <div className="fixed bottom-0 left-0 right-0 p-4">
@@ -388,25 +175,6 @@ const DetalleProducto: React.FC<DetalleProductoProps> = ({ producto, onClose, on
                         </button>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <div className="flex-1">
-                    <IonText className="text-base mb-2 text-gray-400 block">
-                      Mesa
-                    </IonText>
-                    <input
-                      type="number"
-                      value={numeroMesa ?? ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setNumeroMesa(value === '' ? null : Number(value));
-                      }}
-                      placeholder="N° mesa"
-                      className="w-full p-2 bg-gray-800 text-white rounded-xl placeholder-gray-500 border-none focus:outline-none focus:ring-1 focus:ring-white"
-                    />
-
                   </div>
                 </div>
               </div>

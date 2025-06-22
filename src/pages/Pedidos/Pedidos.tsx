@@ -15,56 +15,14 @@ import {
     IonLabel,
     IonMenuButton,
     IonButtons,
-    IonMenuToggle,
-    useIonViewWillEnter
+    useIonViewWillEnter,
+    IonButton
 } from '@ionic/react';
 import { timeOutline, restaurantOutline, checkmarkDone, closeCircle, home, cart, logOut } from 'ionicons/icons';
 import { menu } from 'ionicons/icons';
-import { Pedido, DetallePedido, getMisPedidos, getPedidoById, updateEstadoPedido, ProductoPedido as BaseProductoPedido } from '../../services/pedido.service';
+import { orderService, Pedido } from '../../services/api.service';
 import { logout } from '../../services/auth.service';
-
-interface ProductoPedido {
-    // Propiedades de producto
-    id_producto: number;
-    id_detalle_pedido?: number;
-    nombre_producto: string;
-    precio_producto: number | string;
-    precio_unitario?: number | string;
-    cantidad: number | string;
-    subtotal?: number | string;
-    notas?: string;
-    imagen_url?: string;
-    estado?: string;
-    created_at?: string;
-    updated_at?: string;
-    
-    // Campos adicionales para compatibilidad
-    [key: string]: any;
-}
-import { getDetallesByPedidoId } from '../../services/detalle-pedido.service';
 import { useHistory } from 'react-router-dom';
-
-interface ApiResponse<T> {
-    success: boolean;
-    data: T;
-    message?: string;
-    error?: string;
-}
-
-// Extendemos la interfaz Pedido para incluir detalles
-interface PedidoConDetalles extends Omit<Pedido, 'detalles'> {
-    detalles: DetallePedido[];
-}
-
-interface PedidoConProductos extends Omit<Pedido, 'detalles' | 'usuario'> {
-    productos: ProductoPedido[];
-    usuario?: {
-        id_usuario: number;
-        nombre_usuario: string;
-        apellido_usuario: string;
-        cedula_usuario: string;
-    } | null;
-}
 
 const formatPrecio = (precio: any) => {
     const num = Number(precio);
@@ -73,14 +31,13 @@ const formatPrecio = (precio: any) => {
 
 const Pedidos: React.FC = () => {
     const history = useHistory();
-    const [pedidos, setPedidos] = useState<PedidoConProductos[]>([]);
+    const [pedidos, setPedidos] = useState<Pedido[]>([]);
     const [loading, setLoading] = useState(true);
     const [segment, setSegment] = useState('todos');
     const [present] = useIonToast();
     const [presentLoading, dismissLoading] = useIonLoading();
     const [activePath, setActivePath] = useState(window.location.pathname);
 
-    // Actualizar la ruta activa cuando cambie la ubicación
     useEffect(() => {
         const unlisten = history.listen((location) => {
             setActivePath(location.pathname);
@@ -88,145 +45,24 @@ const Pedidos: React.FC = () => {
         return () => unlisten();
     }, [history]);
 
-    // Cargar los pedidos al montar el componente y cuando cambie el segmento
-    useEffect(() => {
-        cargarPedidos();
-    }, [segment]); // Añadimos segment como dependencia
-
-    // Actualizar los pedidos cada vez que se entre a la página
     useIonViewWillEnter(() => {
         cargarPedidos();
     });
 
-    // Función para navegar a una ruta específica
-    const navigateTo = async (path: string) => {
-        const menu = await document.querySelector('ion-menu');
-        if (menu) {
-            await menu.close();
-        }
-        history.push(path);
-        setActivePath(path);
-    };
-
-    // Función para cerrar sesión
-    const handleLogout = async () => {
-        try {
-            await logout();
-            // Forzar recarga completa para limpiar el estado
-            window.location.href = '/login';
-        } catch (error) {
-            console.error('Error al cerrar sesión:', error);
-        }
-    };
-
     const cargarPedidos = async () => {
         try {
             setLoading(true);
-
-            // Obtener todos los pedidos del servicio
-            const response = await getMisPedidos();
+            const response = await orderService.getMisPedidos();
             
-            // Verificar si se recibieron datos válidos
-            if (!Array.isArray(response)) {
-                throw new Error('Error al cargar los pedidos: formato de respuesta inválido');
-            }
-            
-            // Procesar los pedidos para asegurar que tengan la estructura correcta
-            const pedidosProcesados = response.map(pedido => ({
-                ...pedido,
-                // Asegurarnos de que el pedido tenga un array de productos
-                productos: Array.isArray(pedido.productos) 
-                    ? pedido.productos 
-                    : []
-            }));
-            
-            // Función para filtrar pedidos según el segmento seleccionado
-            const filtrarPedidos = (pedidos: PedidoConProductos[]) => {
-                if (segment === 'todos') return [...pedidos];
-                
-                return pedidos.filter(pedido => {
-                    // Verificar el estado del pedido principal
-                    if (pedido.estado_pedido === segment) {
-                        return true;
-                    }
-                    
-                    // Si no coincide, verificar si algún producto tiene el estado
-                    if (pedido.productos && pedido.productos.length > 0) {
-                        return pedido.productos.some(p => p.estado === segment);
-                    }
-                    
-                    return false;
-                });
-            };
-            
-            // Filtrar los pedidos procesados
-            const pedidosFiltrados = filtrarPedidos(pedidosProcesados);
-            
-            // Agrupar los pedidos por id_grupo_pedido
-            const grupos: { [key: string]: PedidoConProductos } = {};
-            
-            // Procesar cada pedido filtrado
-            pedidosFiltrados.forEach(pedido => {
-                // Usar el id_grupo_pedido si existe, de lo contrario crear uno único
-                const grupoId = pedido.id_grupo_pedido || `pedido_${pedido.id_pedido}`;
-
-                if (!grupos[grupoId]) {
-                    // Si es el primer pedido del grupo, crear la entrada
-                    grupos[grupoId] = {
-                        ...pedido,
-                        id_grupo_pedido: grupoId,
-                        productos: []
-                    };
-                }
-                
-                // Procesar productos si existen
-                if (Array.isArray(pedido.productos)) {
-                    const productosProcesados = pedido.productos.map(p => ({
-                        ...p,
-                        id_producto: Number(p.id_producto) || 0,
-                        id_detalle_pedido: Number(p.id_detalle_pedido) || 0,
-                        precio_producto: Number(p.precio_producto) || 0,
-                        precio_unitario: Number(p.precio_unitario) || 0,
-                        cantidad: Number(p.cantidad) || 1,
-                        subtotal: Number(p.subtotal) || 0,
-                        notas: p.notas || '',
-                        estado: p.estado || 'pendiente',
-                        imagen_url: p.imagen_url || ''
-                    }));
-                    
-                    // Agregar los productos al grupo
-                    grupos[grupoId].productos = [
-                        ...(grupos[grupoId].productos || []),
-                        ...productosProcesados
-                    ];
-                }
-                
-                // Calcular el total del pedido
-                if (grupos[grupoId].productos && grupos[grupoId].productos.length > 0) {
-                    const total = grupos[grupoId].productos.reduce(
-                        (sum: number, p: ProductoPedido) => sum + (Number(p.subtotal) || 0), 
-                        0
-                    );
-                    grupos[grupoId].total_pedido = total;
-                } else {
-                    grupos[grupoId].total_pedido = 0;
-                }
+            const pedidosFiltrados = response.filter((pedido: Pedido) => {
+                if (segment === 'todos') return true;
+                return pedido.estado_pedido === segment;
             });
+
+            const pedidosOrdenados = pedidosFiltrados.sort((a: Pedido, b: Pedido) => 
+                new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime()
+            );
             
-            // Convertir el objeto de grupos a array y ordenar
-            const pedidosOrdenados = Object.values(grupos)
-                .map(grupo => ({
-                    ...grupo,
-                    productos: [...grupo.productos].sort((a, b) => 
-                        (a.id_detalle_pedido || 0) - (b.id_detalle_pedido || 0)
-                    )
-                }))
-                .sort((a, b) => {
-                    const fechaA = a.created_at ? new Date(a.created_at).getTime() : 0;
-                    const fechaB = b.created_at ? new Date(b.created_at).getTime() : 0;
-                    return fechaB - fechaA; // Orden descendente (más reciente primero)
-                });
-                
             setPedidos(pedidosOrdenados);
         } catch (error) {
             present({
@@ -240,10 +76,32 @@ const Pedidos: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        cargarPedidos();
+    }, [segment]);
+
+    const navigateTo = async (path: string) => {
+        const menuEl = await document.querySelector('ion-menu');
+        if (menuEl) {
+            await menuEl.close();
+        }
+        history.push(path);
+        setActivePath(path);
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            window.location.href = '/login';
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+        }
+    };
+
     const handleActualizarEstado = async (id: number, nuevoEstado: string) => {
         try {
             await presentLoading('Actualizando estado...');
-            await updateEstadoPedido(id, nuevoEstado);
+            await orderService.updateEstadoPedido(id, nuevoEstado);
             await cargarPedidos();
 
             present({
@@ -276,15 +134,13 @@ const Pedidos: React.FC = () => {
     };
 
     const getEstadoBadgeColor = (estado: string) => {
-        switch (estado.toLowerCase()) {
+        switch (estado?.toLowerCase()) {
             case 'pendiente':
                 return 'bg-yellow-100 text-yellow-800';
-            case 'en_preparacion':
+            case 'en_proceso':
                 return 'bg-blue-100 text-blue-800';
-            case 'listo':
+            case 'completado':
                 return 'bg-green-100 text-green-800';
-            case 'entregado':
-                return 'bg-purple-100 text-purple-800';
             case 'cancelado':
                 return 'bg-red-100 text-red-800';
             default:
@@ -295,12 +151,11 @@ const Pedidos: React.FC = () => {
     const getEstadoTexto = (estado: string) => {
         const estados: { [key: string]: string } = {
             pendiente: 'Pendiente',
-            en_preparacion: 'En preparación',
-            listo: 'Listo para servir',
-            entregado: 'Entregado',
+            en_proceso: 'En preparación',
+            completado: 'Completado',
             cancelado: 'Cancelado'
         };
-        return estados[estado.toLowerCase()] || estado;
+        return estados[estado?.toLowerCase()] || estado;
     };
 
     return (
@@ -326,8 +181,16 @@ const Pedidos: React.FC = () => {
                                 className={`${activePath.startsWith('/pedidos') ? 'bg-gray-800' : ''} --background:transparent hover:bg-gray-800 rounded-lg m-2`}
                                 onClick={() => navigateTo('/pedidos')}
                             >
-                                <IonIcon slot="start" icon={cart} className="text-white text-xl mr-4" />
+                                <IonIcon slot="start" icon={restaurantOutline} className="text-white text-xl mr-4" />
                                 <IonLabel className="text-white">Pedidos</IonLabel>
+                            </IonItem>
+                            <IonItem
+                                button
+                                className={`${activePath === '/carrito' ? 'bg-gray-800' : ''} --background:transparent hover:bg-gray-800 rounded-lg m-2`}
+                                onClick={() => navigateTo('/carrito')}
+                            >
+                                <IonIcon slot="start" icon={cart} className="text-white text-xl mr-4" />
+                                <IonLabel className="text-white">Carrito</IonLabel>
                             </IonItem>
                         </IonList>
                         <div className="p-4 border-t border-gray-700">
@@ -357,6 +220,11 @@ const Pedidos: React.FC = () => {
                             </IonMenuButton>
                         </IonButtons>
                         <IonTitle className="text-left font-bold text-white">Pedidos</IonTitle>
+                        <IonButtons slot="end">
+                            <IonButton onClick={() => history.push('/carrito')}>
+                                <IonIcon icon={cart} />
+                            </IonButton>
+                        </IonButtons>
                     </IonToolbar>
                     <IonToolbar className="px-4 py-3"
                         style={{
@@ -366,8 +234,8 @@ const Pedidos: React.FC = () => {
                             {[
                                 { value: 'todos', label: 'Todos' },
                                 { value: 'pendiente', label: 'Pendientes' },
-                                { value: 'en_preparacion', label: 'Preparación' },
-                                { value: 'listo', label: 'Listos' }
+                                { value: 'en_proceso', label: 'En proceso' },
+                                { value: 'completado', label: 'Completados' }
                             ].map(({ value, label }) => (
                                 <button
                                     key={value}
@@ -420,7 +288,7 @@ const Pedidos: React.FC = () => {
                     ) : (
                         <div className="space-y-4">
                             {pedidos.map((pedido) => (
-                                <div key={pedido.id_grupo_pedido || pedido.id_pedido} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/10">
+                                <div key={pedido.id_pedido} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/10">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <div className="flex items-center text-sm text-gray-400 mb-1">
@@ -438,7 +306,6 @@ const Pedidos: React.FC = () => {
                                         </span>
                                     </div>
 
-                                    {/* Lista de productos del pedido */}
                                     <div className="mt-4 space-y-3">
                                         {pedido.usuario && (
                                             <div className="flex justify-between text-sm">
@@ -449,38 +316,33 @@ const Pedidos: React.FC = () => {
                                             </div>
                                         )}
 
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-400">Mesa:</span>
-                                            <span className="text-gray-300">#{pedido.numero_mesa || '--'}</span>
-                                        </div>
-
                                         <div className="space-y-2 mt-3">
                                             <p className="text-sm font-medium text-gray-300">
-                                                Productos ({pedido.productos?.length || 0}):
+                                                Productos ({pedido.detalles_pedido?.length || 0}):
                                             </p>
 
-                                            {pedido.productos && pedido.productos.length > 0 ? (
+                                            {pedido.detalles_pedido && pedido.detalles_pedido.length > 0 ? (
                                                 <div className="space-y-2">
-                                                    {pedido.productos.map((producto, idx) => (
-                                                        <div key={`${pedido.id_pedido}-${producto.id_producto}-${idx}`}
+                                                    {pedido.detalles_pedido.map((detalle, idx) => (
+                                                        <div key={detalle.id_detalle}
                                                             className="pl-3 border-l-2 border-white/20">
                                                             <div className="flex justify-between">
                                                                 <span className="text-sm font-medium text-white">
-                                                                    {producto.nombre_producto || 'Producto sin nombre'}
+                                                                    {detalle.producto?.nombre_producto || 'Producto sin nombre'}
                                                                 </span>
                                                                 <span className="text-sm text-gray-300">
-                                                                    x{Number(producto.cantidad) || 1}
+                                                                    x{detalle.cantidad_producto || 1}
                                                                 </span>
                                                             </div>
                                                             <div className="flex justify-between text-sm text-gray-400">
-                                                                <span>${formatPrecio(Number(producto.precio_producto) || 0)} c/u</span>
+                                                                <span>${formatPrecio(detalle.precio_unitario_producto || 0)} c/u</span>
                                                                 <span>
-                                                                    ${formatPrecio((Number(producto.precio_producto) || 0) * (Number(producto.cantidad) || 1))}
+                                                                    ${formatPrecio((Number(detalle.precio_unitario_producto) || 0) * (detalle.cantidad_producto || 1))}
                                                                 </span>
                                                             </div>
-                                                            {producto.notas && (
+                                                            {detalle.nota_producto && (
                                                                 <p className="text-xs text-gray-400 italic mt-1">
-                                                                    Nota: {producto.notas}
+                                                                    Nota: {detalle.nota_producto}
                                                                 </p>
                                                             )}
                                                         </div>
@@ -502,22 +364,30 @@ const Pedidos: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {(pedido.estado_pedido === 'pendiente' || pedido.estado_pedido === 'en_preparacion') && (
+                                        {(pedido.estado_pedido === 'pendiente' || pedido.estado_pedido === 'en_proceso') && (
                                             <div className="mt-3 pt-3 border-t border-white/10">
                                                 <div className="flex justify-end space-x-2">
                                                     {pedido.estado_pedido === 'pendiente' && (
                                                         <button
-                                                            onClick={() => handleActualizarEstado(pedido.id_pedido, 'en_preparacion')}
+                                                            onClick={() => handleActualizarEstado(pedido.id_pedido, 'en_proceso')}
                                                             className="px-3 py-1.5 text-xs font-medium bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
                                                         >
-                                                            En preparación
+                                                            En proceso
+                                                        </button>
+                                                    )}
+                                                    {pedido.estado_pedido === 'en_proceso' && (
+                                                        <button
+                                                            onClick={() => handleActualizarEstado(pedido.id_pedido, 'completado')}
+                                                            className="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                                        >
+                                                            Completar
                                                         </button>
                                                     )}
                                                     <button
-                                                        onClick={() => handleActualizarEstado(pedido.id_pedido, 'listo')}
-                                                        className="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                                        onClick={() => handleActualizarEstado(pedido.id_pedido, 'cancelado')}
+                                                        className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                                                     >
-                                                        Marcar como listo
+                                                        Cancelar
                                                     </button>
                                                 </div>
                                             </div>

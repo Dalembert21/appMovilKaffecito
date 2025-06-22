@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IonContent, IonPage, IonLoading, IonAlert } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-import { login } from '../../services/auth.service';
+import { authService } from '../../services/api.service';
 
 interface LoginProps {
   onLogin?: () => void;
@@ -29,19 +29,23 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       }
 
       console.log('Intentando login con:', { cedula, password });
-      const response = await login(cedula, password);
+      const response = await authService.login(cedula, password);
       console.log('Respuesta del login:', response);
 
-      if (response?.access_token) {
-        // Guardar el token y notificar el inicio de sesión exitoso
-        localStorage.setItem('access_token', response.access_token);
-        if (onLogin) {
-          onLogin();
-        }
-        history.push('/home');
-      } else {
-        throw new Error('No se recibió un token de acceso');
+      // Validar el rol
+      if (response?.user?.rol !== 'mesero') {
+        setError('Solo los usuarios con rol MESERO pueden acceder a la app móvil.');
+        setIsLoading(false);
+        return;
       }
+
+      // Guardar el token y notificar el inicio de sesión exitoso
+      localStorage.setItem('token', response.access_token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      if (onLogin) {
+        onLogin();
+      }
+      history.push('/home');
     } catch (error: any) {
       console.error('Error de autenticación:', error);
       const errorMessage = error.response?.data?.message ||
@@ -109,13 +113,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               />
             </div>
 
-            <div className="flex items-center">
-              <div className="text-sm">
-                <a href="#" className="font-medium text-white transition">
-                  ¿Olvidaste tu contraseña?
-                </a>
-              </div>
-            </div>
+           
 
             <div>
               <button
