@@ -112,208 +112,82 @@ export const productService = {
   },
 };
 
-// Order services
-export const orderService = {
-  createOrder: async (orderData: any) => {
-    const response = await api.post('/pedidos', orderData);
-    return response.data;
+// Order services - ESTA SECCIÓN SERÁ REEMPLAZADA
+export const pedidoService = {
+  /**
+   * Crea un nuevo pedido con sus detalles en una sola llamada a la API.
+   * Este método es más robusto y se alinea con la lógica del backend.
+   * @param carritoItems - Array de productos en el carrito.
+   * @returns El pedido creado por el backend.
+   */
+  crearPedido: async (carritoItems: any[]): Promise<Pedido> => {
+    try {
+      if (!carritoItems || carritoItems.length === 0) {
+        throw new Error('No se puede crear un pedido con un carrito vacío.');
+      }
+
+      // Prepara los detalles del pedido según el formato que espera el backend
+      const detalles_pedido = carritoItems.map(item => {
+        if (!item.producto?.id_producto || !item.cantidad) {
+          throw new Error(`Producto inválido en el carrito: ${item.producto?.nombre_producto || 'Desconocido'}`);
+        }
+        return {
+          id_producto: Number(item.producto.id_producto),
+          cantidad_producto: Number(item.cantidad),
+          nota_producto: item.notas || undefined,
+        };
+      });
+
+      // Construye el payload final para la API
+      const payload = {
+        detalles_pedido,
+      };
+
+      console.log('Enviando payload para crear pedido:', payload);
+
+      const response = await api.post('/pedidos', payload);
+      
+      console.log('Pedido creado exitosamente:', response.data);
+      return response.data as Pedido;
+
+    } catch (error: any) {
+      console.error('Error al crear el pedido:', error.response?.data || error.message);
+      const backendMessage = error.response?.data?.message;
+      // El backend puede devolver un array de errores, los unimos para mostrarlos
+      const errorMessage = Array.isArray(backendMessage) ? backendMessage.join(', ') : backendMessage;
+      throw new Error(errorMessage || 'Ocurrió un error inesperado al crear el pedido.');
+    }
   },
-  getOrders: async () => {
+
+  /**
+   * Obtiene todos los pedidos.
+   * @returns Una lista de todos los pedidos.
+   */
+  obtenerTodos: async (): Promise<Pedido[]> => {
     const response = await api.get('/pedidos');
     return response.data;
   },
-  getOrderDetails: async (orderId: number) => {
-    const response = await api.get(`/pedidos/${orderId}`);
-    return response.data;
-  },
-  getOrderById: async (id: number) => {
+
+  /**
+   * Obtiene un pedido específico por su ID.
+   * @param id - El ID del pedido.
+   * @returns El pedido encontrado.
+   */
+  obtenerPorId: async (id: number): Promise<Pedido> => {
     const response = await api.get(`/pedidos/${id}`);
     return response.data;
   },
-  getOrdersByStatus: async (estado: string) => {
-    const response = await api.get(`/pedidos/estado/${estado}`);
-    return response.data;
-  },
-  updateEstadoPedido: async (id: number, estado: string) => {
+
+  /**
+   * Actualiza el estado de un pedido.
+   * @param id - El ID del pedido a actualizar.
+   * @param estado - El nuevo estado del pedido.
+   * @returns El pedido actualizado.
+   */
+  actualizarEstado: async (id: number, estado: string): Promise<Pedido> => {
     const response = await api.put(`/pedidos/${id}`, { estado_pedido: estado });
     return response.data;
   },
-  getOrdersByTable: async (numeroMesa: number) => {
-    const response = await api.get(`/pedidos/mesa/${numeroMesa}`);
-    return response.data;
-  },
-  getMisPedidos: async () => {
-    const response = await api.get('/pedidos');
-    return response.data;
-  },
-};
-
-// Custom Order Services - Servicios personalizados con mejor manejo
-export const customOrderService = {
-  // Crear pedido con validación y manejo de errores mejorado
-  createOrderWithValidation: async (carritoItems: any[], userId: number) => {
-    try {
-      // Validar que el usuario esté autenticado
-      if (!userId) {
-        throw new Error('Usuario no autenticado');
-      }
-
-      // Validar que el carrito no esté vacío
-      if (!carritoItems || carritoItems.length === 0) {
-        throw new Error('El carrito está vacío');
-      }
-
-      // Preparar los detalles del pedido
-      const detalles_pedido = carritoItems.map(item => ({
-        id_producto: Number(item.producto.id_producto),
-        cantidad_producto: Number(item.cantidad),
-        nota_producto: item.notas || undefined
-      }));
-
-      // Estructura del pedido según el backend
-      const pedidoData = {
-        id_usuario: userId,
-        detalles_pedido: detalles_pedido
-      };
-
-      console.log('Enviando pedido al backend:', pedidoData);
-
-      const response = await api.post('/pedidos', pedidoData);
-      console.log('Pedido creado exitosamente:', response.data);
-      
-      return response.data;
-    } catch (error: any) {
-      console.error('Error en createOrderWithValidation:', error);
-      
-      // Manejo específico de errores
-      if (error.response?.status === 500) {
-        throw new Error('Error interno del servidor. Verifica que el backend esté funcionando correctamente.');
-      } else if (error.response?.status === 400) {
-        throw new Error(`Error de validación: ${error.response.data?.message || 'Datos inválidos'}`);
-      } else if (error.response?.status === 401) {
-        throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
-      } else if (error.message) {
-        throw new Error(error.message);
-      } else {
-        throw new Error('Error desconocido al crear el pedido');
-      }
-    }
-  },
-
-  // Crear pedido paso a paso (crear pedido primero, luego detalles)
-  createOrderStepByStep: async (carritoItems: any[], userId: number) => {
-    try {
-      // Paso 1: Crear el pedido principal
-      const pedidoData = {
-        id_usuario: userId,
-        total_pedido: carritoItems.reduce((total, item) => 
-          total + (Number(item.producto.precio_producto) * Number(item.cantidad)), 0
-        ),
-        estado_pedido: 'pendiente'
-      };
-
-      console.log('Creando pedido principal:', pedidoData);
-      const pedidoResponse = await api.post('/pedidos', pedidoData);
-      const pedido = pedidoResponse.data;
-
-      console.log('Pedido principal creado:', pedido);
-
-      // Paso 2: Crear cada detalle del pedido
-      const detallesCreados = [];
-      for (const item of carritoItems) {
-        const detalleData = {
-          id_pedido: pedido.id_pedido,
-          id_producto: Number(item.producto.id_producto),
-          cantidad_producto: Number(item.cantidad),
-          precio_unitario_producto: Number(item.producto.precio_producto),
-          nota_producto: item.notas || undefined
-        };
-
-        console.log('Creando detalle:', detalleData);
-        const detalleResponse = await api.post('/detalle-pedido', detalleData);
-        detallesCreados.push(detalleResponse.data);
-      }
-
-      console.log('Todos los detalles creados:', detallesCreados);
-
-      // Retornar el pedido completo con sus detalles
-      return {
-        ...pedido,
-        detalles_pedido: detallesCreados
-      };
-
-    } catch (error: any) {
-      console.error('Error en createOrderStepByStep:', error);
-      throw new Error(`Error al crear pedido paso a paso: ${error.message}`);
-    }
-  },
-
-  // Crear pedido con cliente por defecto
-  createOrderWithDefaultClient: async (carritoItems: any[], userId: number) => {
-    try {
-      // Crear cliente por defecto primero
-      const clienteData = {
-        nombre_cliente: 'Consumidor Final',
-        tipo_cliente: 'final'
-      };
-
-      console.log('Creando cliente por defecto:', clienteData);
-      const clienteResponse = await api.post('/clientes', clienteData);
-      const cliente = clienteResponse.data;
-
-      console.log('Cliente creado:', cliente);
-
-      // Crear pedido con el cliente
-      const pedidoData = {
-        id_usuario: userId,
-        id_cliente: cliente.id_cliente,
-        detalles_pedido: carritoItems.map(item => ({
-          id_producto: Number(item.producto.id_producto),
-          cantidad_producto: Number(item.cantidad),
-          nota_producto: item.notas || undefined
-        }))
-      };
-
-      console.log('Creando pedido con cliente:', pedidoData);
-      const pedidoResponse = await api.post('/pedidos', pedidoData);
-      
-      return pedidoResponse.data;
-
-    } catch (error: any) {
-      console.error('Error en createOrderWithDefaultClient:', error);
-      throw new Error(`Error al crear pedido con cliente: ${error.message}`);
-    }
-  },
-
-  // Validar carrito antes de crear pedido
-  validateCart: (carritoItems: any[]) => {
-    const errors = [];
-
-    if (!carritoItems || carritoItems.length === 0) {
-      errors.push('El carrito está vacío');
-    }
-
-    for (let i = 0; i < carritoItems.length; i++) {
-      const item = carritoItems[i];
-      
-      if (!item.producto || !item.producto.id_producto) {
-        errors.push(`Producto ${i + 1}: ID de producto inválido`);
-      }
-      
-      if (!item.cantidad || item.cantidad < 1) {
-        errors.push(`Producto ${i + 1}: Cantidad inválida`);
-      }
-      
-      if (!item.producto.precio_producto || Number(item.producto.precio_producto) <= 0) {
-        errors.push(`Producto ${i + 1}: Precio inválido`);
-      }
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
-  }
 };
 
 // Detail Order services

@@ -5,7 +5,7 @@ import {
 } from '@ionic/react';
 import { cart, trash, remove, add, arrowBack } from 'ionicons/icons';
 import { CarritoContext } from '../../context/CarritoContext';
-import { customOrderService } from '../../services/api.service';
+import { pedidoService } from '../../services/api.service';
 import { useHistory } from 'react-router-dom';
 import { API_URL, getProductImageUrl } from '../../config';
 
@@ -51,19 +51,10 @@ const Carrito: React.FC = () => {
         return;
       }
 
-      // Validar el carrito antes de proceder
-      const validation = customOrderService.validateCart(carrito);
-      if (!validation.isValid) {
-        setToastMsg(`Errores de validación: ${validation.errors.join(', ')}`);
-        setShowToast(true);
-        setIsLoading(false);
-        return;
-      }
+      // Llama al servicio de pedidos sin pasar el ID de usuario
+      const pedido = await pedidoService.crearPedido(carrito);
 
-      // Usar el servicio personalizado con validación mejorada
-      const pedido = await customOrderService.createOrderWithValidation(carrito, Number(user.id));
-
-      console.log('Pedido creado exitosamente:', pedido);
+      console.log('Pedido creado exitosamente con el método refactorizado:', pedido);
 
       // Limpiar el carrito después de crear el pedido exitosamente
       limpiarCarrito();

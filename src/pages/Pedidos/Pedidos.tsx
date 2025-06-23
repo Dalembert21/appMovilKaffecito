@@ -16,11 +16,14 @@ import {
     IonMenuButton,
     IonButtons,
     useIonViewWillEnter,
-    IonButton
+    IonButton,
+    IonText,
+    IonRefresher,
+    IonRefresherContent
 } from '@ionic/react';
-import { timeOutline, restaurantOutline, checkmarkDone, closeCircle, home, cart, logOut } from 'ionicons/icons';
+import { timeOutline, restaurantOutline, checkmarkDone, closeCircle, home, cart, logOut, arrowBack, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import { menu } from 'ionicons/icons';
-import { orderService, Pedido } from '../../services/api.service';
+import { Pedido, pedidoService } from '../../services/api.service';
 import { logout } from '../../services/auth.service';
 import { useHistory } from 'react-router-dom';
 
@@ -37,6 +40,7 @@ const Pedidos: React.FC = () => {
     const [present] = useIonToast();
     const [presentLoading, dismissLoading] = useIonLoading();
     const [activePath, setActivePath] = useState(window.location.pathname);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const unlisten = history.listen((location) => {
@@ -52,25 +56,22 @@ const Pedidos: React.FC = () => {
     const cargarPedidos = async () => {
         try {
             setLoading(true);
-            const response = await orderService.getMisPedidos();
-            
-            const pedidosFiltrados = response.filter((pedido: Pedido) => {
-                if (segment === 'todos') return true;
-                return pedido.estado_pedido === segment;
-            });
+            const data = await pedidoService.obtenerTodos();
+            // Filtrar por estado si no es "todos"
+            const pedidosFiltrados = segment === 'todos'
+                ? data
+                : data.filter((pedido: Pedido) => pedido.estado_pedido === segment);
 
-            const pedidosOrdenados = pedidosFiltrados.sort((a: Pedido, b: Pedido) => 
-                new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime()
-            );
-            
+            // Ordenar los pedidos: pendientes primero, luego por fecha descendente
+            const pedidosOrdenados = pedidosFiltrados.sort((a, b) => {
+                if (a.estado_pedido === 'pendiente' && b.estado_pedido !== 'pendiente') return -1;
+                if (a.estado_pedido !== 'pendiente' && b.estado_pedido === 'pendiente') return 1;
+                return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+            });
             setPedidos(pedidosOrdenados);
         } catch (error) {
-            present({
-                message: 'Error al cargar los pedidos',
-                duration: 3000,
-                position: 'top',
-                color: 'danger'
-            });
+            console.error('Error al cargar pedidos:', error);
+            setError('No se pudieron cargar los pedidos. Inténtalo de nuevo.');
         } finally {
             setLoading(false);
         }
@@ -101,7 +102,7 @@ const Pedidos: React.FC = () => {
     const handleActualizarEstado = async (id: number, nuevoEstado: string) => {
         try {
             await presentLoading('Actualizando estado...');
-            await orderService.updateEstadoPedido(id, nuevoEstado);
+            await pedidoService.actualizarEstado(id, nuevoEstado);
             await cargarPedidos();
 
             present({
@@ -230,29 +231,52 @@ const Pedidos: React.FC = () => {
                         style={{
                             '--background': '#0c0f14',
                         } as React.CSSProperties}>
-                        <div className="w-full grid grid-cols-4 gap-2">
-                            {[
-                                { value: 'todos', label: 'Todos' },
-                                { value: 'pendiente', label: 'Pendientes' },
-                                { value: 'en_proceso', label: 'En proceso' },
-                                { value: 'completado', label: 'Completados' }
-                            ].map(({ value, label }) => (
-                                <button
-                                    key={value}
-                                    onClick={() => setSegment(value)}
-                                    className={`
-                                        py-2 text-sm font-medium rounded-lg transition-all duration-200
-                                        whitespace-nowrap overflow-hidden text-ellipsis
-                                        ${segment === value
-                                            ? 'bg-primary-600 text-white shadow-lg'
-                                            : 'text-gray-300 hover:text-white bg-gray-500/30 border border-gray-500/50'
-                                        }
-                                        hover:shadow-md active:scale-95
-                                    `}
-                                >
-                                    {label}
-                                </button>
-                            ))}
+                        <div className="w-full flex flex-col gap-2 items-center justify-center">
+                            <div className="w-full flex gap-2 justify-center">
+                                {[
+                                    { value: 'todos', label: 'Todos' },
+                                    { value: 'pendiente', label: 'Pendientes' },
+                                    { value: 'en_proceso', label: 'En proceso' }
+                                ].map(({ value, label }) => (
+                                    <button
+                                        key={value}
+                                        onClick={() => setSegment(value)}
+                                        className={`
+                                            flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200
+                                            whitespace-nowrap overflow-hidden text-ellipsis
+                                            ${segment === value
+                                                ? 'bg-primary-600 text-white shadow-lg'
+                                                : 'text-gray-300 hover:text-white bg-gray-500/30 border border-gray-500/50'
+                                            }
+                                            hover:shadow-md active:scale-95
+                                        `}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="w-full flex gap-2 justify-center">
+                                {[
+                                    { value: 'completado', label: 'Completados' },
+                                    { value: 'cancelado', label: 'Cancelados' }
+                                ].map(({ value, label }) => (
+                                    <button
+                                        key={value}
+                                        onClick={() => setSegment(value)}
+                                        className={`
+                                            flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-200
+                                            whitespace-nowrap overflow-hidden text-ellipsis
+                                            ${segment === value
+                                                ? 'bg-primary-600 text-white shadow-lg'
+                                                : 'text-gray-300 hover:text-white bg-gray-500/30 border border-gray-500/50'
+                                            }
+                                            hover:shadow-md active:scale-95
+                                        `}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </IonToolbar>
                 </IonHeader>
