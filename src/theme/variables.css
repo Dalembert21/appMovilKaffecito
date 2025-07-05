@@ -1,2 +1,516 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
+
+:root {
+    /** primary **/
+    --ion-color-primary: #d17842;
+    --ion-color-primary-rgb: 209, 120, 66;
+    --ion-color-primary-contrast: #ffffff;
+    --ion-color-primary-contrast-rgb: 255, 255, 255;
+    --ion-color-primary-shade: #b86a3a;
+    --ion-color-primary-tint: #d68555;
+  
+    /** secondary **/
+    --ion-color-secondary: #262b33;
+    --ion-color-secondary-rgb: 38, 43, 51;
+    --ion-color-secondary-contrast: #ffffff;
+    --ion-color-secondary-contrast-rgb: 255, 255, 255;
+    --ion-color-secondary-shade: #21262c;
+    --ion-color-secondary-tint: #3b4047;
+  
+    /** tertiary **/
+    --ion-color-tertiary: #0c0f14;
+    --ion-color-tertiary-rgb: 12, 15, 20;
+    --ion-color-tertiary-contrast: #ffffff;
+    --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+    --ion-color-tertiary-shade: #0b0d12;
+    --ion-color-tertiary-tint: #24272c;
+  
+    /** success **/
+    --ion-color-success: #10b981;
+    --ion-color-success-rgb: 16, 185, 129;
+    --ion-color-success-contrast: #ffffff;
+    --ion-color-success-contrast-rgb: 255, 255, 255;
+    --ion-color-success-shade: #0ea372;
+    --ion-color-success-tint: #28c28e;
+  
+    /** warning **/
+    --ion-color-warning: #f59e0b;
+    --ion-color-warning-rgb: 245, 158, 11;
+    --ion-color-warning-contrast: #000000;
+    --ion-color-warning-contrast-rgb: 0, 0, 0;
+    --ion-color-warning-shade: #d88b0a;
+    --ion-color-warning-tint: #f6a824;
+  
+    /** danger **/
+    --ion-color-danger: #ef4444;
+    --ion-color-danger-rgb: 239, 68, 68;
+    --ion-color-danger-contrast: #ffffff;
+    --ion-color-danger-contrast-rgb: 255, 255, 255;
+    --ion-color-danger-shade: #d23c3c;
+    --ion-color-danger-tint: #f15757;
+  
+    /** dark **/
+    --ion-color-dark: #1a1a1a;
+    --ion-color-dark-rgb: 26, 26, 26;
+    --ion-color-dark-contrast: #ffffff;
+    --ion-color-dark-contrast-rgb: 255, 255, 255;
+    --ion-color-dark-shade: #171717;
+    --ion-color-dark-tint: #313131;
+  
+    /** medium **/
+    --ion-color-medium: #64748b;
+    --ion-color-medium-rgb: 100, 116, 139;
+    --ion-color-medium-contrast: #ffffff;
+    --ion-color-medium-contrast-rgb: 255, 255, 255;
+    --ion-color-medium-shade: #58607a;
+    --ion-color-medium-tint: #748297;
+  
+    /** light **/
+    --ion-color-light: #f8fafc;
+    --ion-color-light-rgb: 248, 250, 252;
+    --ion-color-light-contrast: #000000;
+    --ion-color-light-contrast-rgb: 0, 0, 0;
+    --ion-color-light-shade: #dadcde;
+    --ion-color-light-tint: #f9fbfc;
+  
+    /* Background colors */
+    --ion-background-color: #0c0f14;
+    --ion-background-color-rgb: 12, 15, 20;
+    --ion-background-color-step-50: #171a1f;
+    --ion-background-color-step-100: #22252a;
+    --ion-background-color-step-150: #2d3035;
+    --ion-background-color-step-200: #383b40;
+    --ion-background-color-step-250: #43464b;
+    --ion-background-color-step-300: #4e5156;
+    --ion-background-color-step-350: #595c61;
+    --ion-background-color-step-400: #64676c;
+    --ion-background-color-step-450: #6f7277;
+    --ion-background-color-step-500: #7a7d82;
+    --ion-background-color-step-550: #85888d;
+    --ion-background-color-step-600: #909398;
+    --ion-background-color-step-650: #9b9ea3;
+    --ion-background-color-step-700: #a6a9ae;
+    --ion-background-color-step-750: #b1b4b9;
+    --ion-background-color-step-800: #bcbfc4;
+    --ion-background-color-step-850: #c7cacf;
+    --ion-background-color-step-900: #d2d5da;
+    --ion-background-color-step-950: #dde0e5;
+  
+    /* Text colors */
+    --ion-text-color: #ffffff;
+    --ion-text-color-rgb: 255, 255, 255;
+    --ion-text-color-step-50: #f2f2f2;
+    --ion-text-color-step-100: #e6e6e6;
+    --ion-text-color-step-150: #d9d9d9;
+    --ion-text-color-step-200: #cccccc;
+    --ion-text-color-step-250: #bfbfbf;
+    --ion-text-color-step-300: #b3b3b3;
+    --ion-text-color-step-350: #a6a6a6;
+    --ion-text-color-step-400: #999999;
+    --ion-text-color-step-450: #8c8c8c;
+    --ion-text-color-step-500: #808080;
+    --ion-text-color-step-550: #737373;
+    --ion-text-color-step-600: #666666;
+    --ion-text-color-step-650: #595959;
+    --ion-text-color-step-700: #4d4d4d;
+    --ion-text-color-step-750: #404040;
+    --ion-text-color-step-800: #333333;
+    --ion-text-color-step-850: #262626;
+    --ion-text-color-step-900: #191919;
+    --ion-text-color-step-950: #0d0d0d;
+  
+    /* Border colors */
+    --ion-border-color: #262b33;
+    --ion-border-color-rgb: 38, 43, 51;
+  
+    /* Card colors */
+    --ion-card-background: rgba(38, 43, 51, 0.95);
+    --ion-card-background-rgb: 38, 43, 51;
+  
+    /* Toolbar colors */
+    --ion-toolbar-background: #0c0f14;
+    --ion-toolbar-background-rgb: 12, 15, 20;
+    --ion-toolbar-border-color: #262b33;
+    --ion-toolbar-color: #ffffff;
+  
+    /* Tab bar colors */
+    --ion-tab-bar-background: #0c0f14;
+    --ion-tab-bar-background-rgb: 12, 15, 20;
+    --ion-tab-bar-border-color: #262b33;
+    --ion-tab-bar-color: #64748b;
+    --ion-tab-bar-color-selected: #d17842;
+  
+    /* Item colors */
+    --ion-item-background: rgba(38, 43, 51, 0.5);
+    --ion-item-background-rgb: 38, 43, 51;
+    --ion-item-border-color: #262b33;
+  
+    /* Button colors */
+    --ion-button-background: #d17842;
+    --ion-button-background-rgb: 209, 120, 66;
+    --ion-button-color: #ffffff;
+    --ion-button-color-rgb: 255, 255, 255;
+  
+    /* Input colors */
+    --ion-input-background: rgba(255, 255, 255, 0.1);
+    --ion-input-background-rgb: 255, 255, 255;
+    --ion-input-border-color: rgba(255, 255, 255, 0.3);
+    --ion-input-color: #ffffff;
+    --ion-input-color-rgb: 255, 255, 255;
+    --ion-input-placeholder-color: rgba(255, 255, 255, 0.5);
+  
+    /* Menu colors */
+    --ion-menu-background: #0c0f14;
+    --ion-menu-background-rgb: 12, 15, 20;
+    --ion-menu-border-color: #262b33;
+  
+    /* Toast colors */
+    --ion-toast-background: #262b33;
+    --ion-toast-background-rgb: 38, 43, 51;
+    --ion-toast-color: #ffffff;
+    --ion-toast-color-rgb: 255, 255, 255;
+  
+    /* Alert colors */
+    --ion-alert-background: #262b33;
+    --ion-alert-background-rgb: 38, 43, 51;
+    --ion-alert-color: #ffffff;
+    --ion-alert-color-rgb: 255, 255, 255;
+  
+    /* Loading colors */
+    --ion-loading-background: rgba(12, 15, 20, 0.8);
+    --ion-loading-background-rgb: 12, 15, 20;
+    --ion-loading-color: #ffffff;
+    --ion-loading-color-rgb: 255, 255, 255;
+  
+    /* Modal colors */
+    --ion-modal-background: #262b33;
+    --ion-modal-background-rgb: 38, 43, 51;
+    --ion-modal-color: #ffffff;
+    --ion-modal-color-rgb: 255, 255, 255;
+  
+    /* Popover colors */
+    --ion-popover-background: #262b33;
+    --ion-popover-background-rgb: 38, 43, 51;
+    --ion-popover-color: #ffffff;
+    --ion-popover-color-rgb: 255, 255, 255;
+  
+    /* Action sheet colors */
+    --ion-action-sheet-background: #262b33;
+    --ion-action-sheet-background-rgb: 38, 43, 51;
+    --ion-action-sheet-color: #ffffff;
+    --ion-action-sheet-color-rgb: 255, 255, 255;
+  
+    /* Picker colors */
+    --ion-picker-background: #262b33;
+    --ion-picker-background-rgb: 38, 43, 51;
+    --ion-picker-color: #ffffff;
+    --ion-picker-color-rgb: 255, 255, 255;
+  
+    /* Datetime colors */
+    --ion-datetime-background: #262b33;
+    --ion-datetime-background-rgb: 38, 43, 51;
+    --ion-datetime-color: #ffffff;
+    --ion-datetime-color-rgb: 255, 255, 255;
+  
+    /* Select colors */
+    --ion-select-background: #262b33;
+    --ion-select-background-rgb: 38, 43, 51;
+    --ion-select-color: #ffffff;
+    --ion-select-color-rgb: 255, 255, 255;
+  
+    /* Checkbox colors */
+    --ion-checkbox-background: #262b33;
+    --ion-checkbox-background-rgb: 38, 43, 51;
+    --ion-checkbox-background-checked: #d17842;
+    --ion-checkbox-background-checked-rgb: 209, 120, 66;
+    --ion-checkbox-border-color: #64748b;
+    --ion-checkbox-border-color-checked: #d17842;
+  
+    /* Toggle colors */
+    --ion-toggle-background: #64748b;
+    --ion-toggle-background-rgb: 100, 116, 139;
+    --ion-toggle-background-checked: #d17842;
+    --ion-toggle-background-checked-rgb: 209, 120, 66;
+    --ion-toggle-handle-background: #ffffff;
+    --ion-toggle-handle-background-rgb: 255, 255, 255;
+  
+    /* Radio colors */
+    --ion-radio-background: #262b33;
+    --ion-radio-background-rgb: 38, 43, 51;
+    --ion-radio-background-checked: #d17842;
+    --ion-radio-background-checked-rgb: 209, 120, 66;
+    --ion-radio-border-color: #64748b;
+    --ion-radio-border-color-checked: #d17842;
+  
+    /* Range colors */
+    --ion-range-background: #64748b;
+    --ion-range-background-rgb: 100, 116, 139;
+    --ion-range-background-active: #d17842;
+    --ion-range-background-active-rgb: 209, 120, 66;
+    --ion-range-knob-background: #ffffff;
+    --ion-range-knob-background-rgb: 255, 255, 255;
+  
+    /* Progress bar colors */
+    --ion-progress-background: #64748b;
+    --ion-progress-background-rgb: 100, 116, 139;
+    --ion-progress-background-active: #d17842;
+    --ion-progress-background-active-rgb: 209, 120, 66;
+  
+    /* Skeleton colors */
+    --ion-skeleton-background: #262b33;
+    --ion-skeleton-background-rgb: 38, 43, 51;
+  
+    /* Refresher colors */
+    --ion-refresher-background: #0c0f14;
+    --ion-refresher-background-rgb: 12, 15, 20;
+    --ion-refresher-color: #d17842;
+    --ion-refresher-color-rgb: 209, 120, 66;
+  
+    /* Infinite scroll colors */
+    --ion-infinite-scroll-background: #0c0f14;
+    --ion-infinite-scroll-background-rgb: 12, 15, 20;
+    --ion-infinite-scroll-color: #d17842;
+    --ion-infinite-scroll-color-rgb: 209, 120, 66;
+  
+    /* Virtual scroll colors */
+    --ion-virtual-scroll-background: #0c0f14;
+    --ion-virtual-scroll-background-rgb: 12, 15, 20;
+  
+    /* Searchbar colors */
+    --ion-searchbar-background: rgba(38, 43, 51, 0.5);
+    --ion-searchbar-background-rgb: 38, 43, 51;
+    --ion-searchbar-color: #ffffff;
+    --ion-searchbar-color-rgb: 255, 255, 255;
+    --ion-searchbar-border-color: #262b33;
+  
+    /* Segment colors */
+    --ion-segment-background: #262b33;
+    --ion-segment-background-rgb: 38, 43, 51;
+    --ion-segment-background-checked: #d17842;
+    --ion-segment-background-checked-rgb: 209, 120, 66;
+    --ion-segment-color: #64748b;
+    --ion-segment-color-checked: #ffffff;
+  
+    /* Chip colors */
+    --ion-chip-background: #262b33;
+    --ion-chip-background-rgb: 38, 43, 51;
+    --ion-chip-color: #ffffff;
+    --ion-chip-color-rgb: 255, 255, 255;
+  
+    /* Badge colors */
+    --ion-badge-background: #d17842;
+    --ion-badge-background-rgb: 209, 120, 66;
+    --ion-badge-color: #ffffff;
+    --ion-badge-color-rgb: 255, 255, 255;
+  
+    /* FAB colors */
+    --ion-fab-background: #d17842;
+    --ion-fab-background-rgb: 209, 120, 66;
+    --ion-fab-color: #ffffff;
+    --ion-fab-color-rgb: 255, 255, 255;
+  
+    /* Reorder colors */
+    --ion-reorder-background: #262b33;
+    --ion-reorder-background-rgb: 38, 43, 51;
+    --ion-reorder-color: #d17842;
+    --ion-reorder-color-rgb: 209, 120, 66;
+  
+    /* Accordion colors */
+    --ion-accordion-background: #262b33;
+    --ion-accordion-background-rgb: 38, 43, 51;
+    --ion-accordion-color: #ffffff;
+    --ion-accordion-color-rgb: 255, 255, 255;
+  
+    /* Breadcrumb colors */
+    --ion-breadcrumb-background: #0c0f14;
+    --ion-breadcrumb-background-rgb: 12, 15, 20;
+    --ion-breadcrumb-color: #64748b;
+    --ion-breadcrumb-color-active: #d17842;
+  
+    /* Context menu colors */
+    --ion-context-menu-background: #262b33;
+    --ion-context-menu-background-rgb: 38, 43, 51;
+    --ion-context-menu-color: #ffffff;
+    --ion-context-menu-color-rgb: 255, 255, 255;
+  
+    /* Split pane colors */
+    --ion-split-pane-background: #0c0f14;
+    --ion-split-pane-background-rgb: 12, 15, 20;
+    --ion-split-pane-border-color: #262b33;
+  
+    /* Grid colors */
+    --ion-grid-background: #0c0f14;
+    --ion-grid-background-rgb: 12, 15, 20;
+  
+    /* List colors */
+    --ion-list-background: #0c0f14;
+    --ion-list-background-rgb: 12, 15, 20;
+  
+    /* Note colors */
+    --ion-note-background: #262b33;
+    --ion-note-background-rgb: 38, 43, 51;
+    --ion-note-color: #ffffff;
+    --ion-note-color-rgb: 255, 255, 255;
+  
+    /* Thumbnail colors */
+    --ion-thumbnail-background: #262b33;
+    --ion-thumbnail-background-rgb: 38, 43, 51;
+  
+    /* Avatar colors */
+    --ion-avatar-background: #262b33;
+    --ion-avatar-background-rgb: 38, 43, 51;
+  
+    /* Label colors */
+    --ion-label-color: #ffffff;
+    --ion-label-color-rgb: 255, 255, 255;
+  
+    /* Text colors */
+    --ion-text-color: #ffffff;
+    --ion-text-color-rgb: 255, 255, 255;
+  
+    /* Link colors */
+    --ion-link-color: #d17842;
+    --ion-link-color-rgb: 209, 120, 66;
+  
+    /* Divider colors */
+    --ion-divider-background: #262b33;
+    --ion-divider-background-rgb: 38, 43, 51;
+  
+    /* Spinner colors */
+    --ion-spinner-color: #d17842;
+    --ion-spinner-color-rgb: 209, 120, 66;
+  
+    /* Ripple colors */
+    --ion-ripple-background: rgba(209, 120, 66, 0.3);
+    --ion-ripple-background-rgb: 209, 120, 66;
+  
+    /* Focus colors */
+    --ion-focus-background: rgba(209, 120, 66, 0.2);
+    --ion-focus-background-rgb: 209, 120, 66;
+  
+    /* Hover colors */
+    --ion-hover-background: rgba(38, 43, 51, 0.8);
+    --ion-hover-background-rgb: 38, 43, 51;
+  
+    /* Active colors */
+    --ion-active-background: rgba(209, 120, 66, 0.2);
+    --ion-active-background-rgb: 209, 120, 66;
+  
+    /* Disabled colors */
+    --ion-disabled-background: rgba(100, 116, 139, 0.3);
+    --ion-disabled-background-rgb: 100, 116, 139;
+    --ion-disabled-color: rgba(255, 255, 255, 0.5);
+    --ion-disabled-color-rgb: 255, 255, 255;
+  
+    /* Selected colors */
+    --ion-selected-background: rgba(209, 120, 66, 0.2);
+    --ion-selected-background-rgb: 209, 120, 66;
+    --ion-selected-color: #d17842;
+    --ion-selected-color-rgb: 209, 120, 66;
+  
+    /* Highlight colors */
+    --ion-highlight-background: rgba(209, 120, 66, 0.2);
+    --ion-highlight-background-rgb: 209, 120, 66;
+    --ion-highlight-color: #d17842;
+    --ion-highlight-color-rgb: 209, 120, 66;
+  
+    /* Shadow colors */
+    --ion-shadow-color: rgba(0, 0, 0, 0.3);
+    --ion-shadow-color-rgb: 0, 0, 0;
+  
+    /* Border radius */
+    --ion-border-radius: 8px;
+    --ion-border-radius-small: 4px;
+    --ion-border-radius-large: 16px;
+  
+    /* Spacing */
+    --ion-padding: 16px;
+    --ion-padding-small: 8px;
+    --ion-padding-large: 24px;
+  
+    /* Font sizes */
+    --ion-font-size-4xl: 2.25rem;   /* 36px */
+    --ion-font-size-3xl: 1.875rem;  /* 30px */
+    --ion-font-size-2xl: 1.5rem;    /* 24px */
+    --ion-font-size-xl: 1.25rem;    /* 20px */
+    --ion-font-size-lg: 1.125rem;   /* 18px */
+    --ion-font-size-base: 1rem;     /* 16px */
+    --ion-font-size-sm: 0.875rem;   /* 14px */
+  
+    /* Font weights */
+    --ion-font-weight-bold: 700;
+    --ion-font-weight-semibold: 600;
+    --ion-font-weight-medium: 500;
+    --ion-font-weight-normal: 400;
+  
+    /* Line heights */
+    --ion-line-height-tight: 1.25;
+    --ion-line-height-normal: 1.5;
+    --ion-line-height-relaxed: 1.75;
+  
+    /* Transitions */
+    --ion-transition-duration: 0.2s;
+    --ion-transition-timing-function: ease-in-out;
+  
+    /* Z-index */
+    --ion-z-index-base: 1;
+    --ion-z-index-dropdown: 1000;
+    --ion-z-index-sticky: 1020;
+    --ion-z-index-fixed: 1030;
+    --ion-z-index-modal-backdrop: 1040;
+    --ion-z-index-modal: 1050;
+    --ion-z-index-popover: 1060;
+    --ion-z-index-tooltip: 1070;
+    --ion-z-index-toast: 1080;
+  }
+  
+  @media (prefers-color-scheme: light) {
+    :root {
+      /* Override for light mode if needed */
+      --ion-background-color: #0c0f14;
+      --ion-background-color-rgb: 12, 15, 20;
+      --ion-text-color: #ffffff;
+      --ion-text-color-rgb: 255, 255, 255;
+      --ion-border-color: #262b33;
+    }
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Dark mode is the default for this app */
+      --ion-background-color: #0c0f14;
+      --ion-background-color-rgb: 12, 15, 20;
+      --ion-text-color: #ffffff;
+      --ion-text-color-rgb: 255, 255, 255;
+      --ion-border-color: #262b33;
+    }
+  }
+  
+  /* Evita la superposición del menú y el título */
+  ion-header, .ion-header, ion-toolbar, .ion-toolbar {
+    z-index: 1001 !important;
+    position: relative;
+  }
+  
+  ion-menu, .ion-menu {
+    z-index: 1000 !important;
+  }
+  
+  .ion-title, ion-title, h1, h2, h3, h4, h5, h6 {
+    font-family: inherit;
+    font-weight: var(--ion-font-weight-bold);
+  }
+  
+  h1, .text-4xl { font-size: var(--ion-font-size-4xl); }
+  h2, .text-3xl { font-size: var(--ion-font-size-3xl); }
+  h3, .text-2xl { font-size: var(--ion-font-size-2xl); }
+  h4, .text-xl  { font-size: var(--ion-font-size-xl); }
+  .text-lg      { font-size: var(--ion-font-size-lg); }
+  .text-base    { font-size: var(--ion-font-size-base); }
+  .text-sm      { font-size: var(--ion-font-size-sm); }
+  .font-bold    { font-weight: var(--ion-font-weight-bold); }
+  .font-semibold{ font-weight: var(--ion-font-weight-semibold); }
+  .font-medium  { font-weight: var(--ion-font-weight-medium); }
+  .font-normal  { font-weight: var(--ion-font-weight-normal); }
+  

@@ -113,8 +113,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               />
             </div>
 
-           
-
             <div>
               <button
                 type="submit"
@@ -124,8 +122,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </button>
             </div>
           </form>
-
-
         </div>
       </div>
     </IonContent>
