@@ -99,7 +99,16 @@ const Carrito: React.FC = () => {
         ) : (
           <IonList>
             {carrito.map((item, idx) => (
-              <IonItem key={idx} className="rounded-2xl my-3 shadow-lg bg-white/10 backdrop-blur-lg">
+              <IonItem
+                key={idx}
+                className="py-2"
+                style={{
+                  background: '#0c0f14',
+                  borderRadius: 0,
+                  boxShadow: 'none',
+                  borderBottom: '1px solid #22252a'
+                }}
+              >
                 <IonImg
                   src={getProductImageUrl(item.producto.imagen_url)}
                   style={{ width: 60, height: 60, borderRadius: 12, objectFit: 'cover', marginRight: 16 }}

@@ -220,7 +220,9 @@ const Pedidos: React.FC = () => {
                                 <IonIcon slot="icon-only" icon={menu} className="text-white text-2xl" />
                             </IonMenuButton>
                         </IonButtons>
-                        <IonTitle className="text-left font-bold text-white">Pedidos</IonTitle>
+                        <div className="font-bold text-white ml-2" style={{ flex: 1, textAlign: 'left' }}>
+                          Pedidos
+                        </div>
                         <IonButtons slot="end">
                             <IonButton onClick={() => history.push('/carrito')}>
                                 <IonIcon icon={cart} />

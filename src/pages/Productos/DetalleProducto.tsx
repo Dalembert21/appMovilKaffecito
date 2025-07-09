@@ -160,18 +160,20 @@ const DetalleProducto: React.FC<DetalleProductoProps> = ({ producto, onClose }) 
                       <div className="flex items-center space-x-2 bg-gray-800 rounded-full px-3 py-1">
                         <button
                           onClick={disminuirCantidad}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-lg"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
+                          style={{ background: '#d17842' }}
                         >
-                          <IonIcon icon={remove} />
+                          <IonIcon icon={remove} style={{ color: '#e0e0e0' }} />
                         </button>
                         <span className="text-lg font-medium w-6 text-center text-white">
                           {cantidad}
                         </span>
                         <button
                           onClick={aumentarCantidad}
-                          className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-lg"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
+                          style={{ background: '#d17842' }}
                         >
-                          <IonIcon icon={add} />
+                          <IonIcon icon={add} style={{ color: '#fff' }} />
                         </button>
                       </div>
                     </div>

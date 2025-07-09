@@ -514,3 +514,23 @@ http://ionicframework.com/docs/theming/ */
   .font-medium  { font-weight: var(--ion-font-weight-medium); }
   .font-normal  { font-weight: var(--ion-font-weight-normal); }
   
+/* Ajuste para evitar superposición entre título y menú */
+ion-toolbar, .ion-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 16px;
+  padding-right: 16px;
+  min-height: 56px;
+}
+
+.ion-title, ion-title, h1 {
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+
+.menu-icon, .cart-icon {
+  margin-left: auto;
+}
+  
